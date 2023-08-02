@@ -13,6 +13,7 @@ namespace CaseStudy.Data.Configuration
     {
         public void Configure(EntityTypeBuilder<AppUser> builder)
         {
+            builder.Property(x => x.Email).IsRequired();
             builder.HasMany(n => n.Carts).WithOne(n => n.AppUser).HasForeignKey(n=>n.UserID);
         }
     }

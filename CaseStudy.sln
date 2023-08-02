@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CaseStudy.Dto", "CaseStudy.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CaseStudy.Business", "CaseStudy.Business\CaseStudy.Business.csproj", "{65AFF299-ABB7-47DD-92FA-44EBD0240BCC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaseStudy.RabbitMQConsumer", "CaseStudy.RabbitMQ.Consumer\CaseStudy.RabbitMQConsumer.csproj", "{29E5762E-5A43-4179-AA3C-68ADF9F47246}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{65AFF299-ABB7-47DD-92FA-44EBD0240BCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65AFF299-ABB7-47DD-92FA-44EBD0240BCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65AFF299-ABB7-47DD-92FA-44EBD0240BCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29E5762E-5A43-4179-AA3C-68ADF9F47246}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29E5762E-5A43-4179-AA3C-68ADF9F47246}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29E5762E-5A43-4179-AA3C-68ADF9F47246}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29E5762E-5A43-4179-AA3C-68ADF9F47246}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

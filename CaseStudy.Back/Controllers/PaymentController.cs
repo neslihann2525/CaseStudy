@@ -21,15 +21,15 @@ namespace CaseStudy.Backend.Controllers
 
         [HttpPost("[action]")]
         [Authorize]
-        public async Task<Business.Result.IResult> PaymentCart(PaymentProcessDto paymentProcess)
+        public async Task<Business.Result.IResult> PaymentCart(PaymentDto payment)
         {
-            var result = await _paymentManager.PaymentProcess(paymentProcess.CardProducts, paymentProcess.Payment, Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value));
+            var result = await _paymentManager.PaymentProcess(payment, Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value));
             if (result.Success)
             {
                 return new SuccessResult();
             }
 
-            return new ErrorResult(new List<string> { "" }, "");
+            return new ErrorResult(result.Message, result.Code);
         }
     }
 }

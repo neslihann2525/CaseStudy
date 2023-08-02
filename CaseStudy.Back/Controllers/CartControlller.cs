@@ -5,6 +5,8 @@ using CaseStudy.Dto.Cart;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using AutoMapper;
 
 namespace CaseStudy.Backend.Controllers
 {
@@ -13,16 +15,18 @@ namespace CaseStudy.Backend.Controllers
     public class CartControlller : ControllerBase
     {
         private readonly ICartManager _cartManager;
-        public CartControlller(ICartManager cartManager)
+        private readonly IMapper _mapper;
+        public CartControlller(ICartManager cartManager, IMapper mapper)
         {
             _cartManager = cartManager;
+            _mapper = mapper;
         }
 
         [HttpGet]
         [Authorize]
         public async Task<IDataResult<GetCartDto>> GetCart()
         {
-            var result = await _cartManager.GetCart(Convert.ToInt32(User.Identity));
+            var result = await _cartManager.GetCart(Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value));
             if (result.Success)
             {
                 return result;
@@ -31,9 +35,11 @@ namespace CaseStudy.Backend.Controllers
         }
         [HttpPost("[action]")]
         [Authorize]
-        public async Task<IDataResult<AddedCartDto>> AddToCart(AddCartDto addCart)
+        public async Task<IDataResult<AddedCartDto>> AddToCart(AddCartParameterDto addCart)
         {
-            var cart = await _cartManager.AddToCart(addCart);
+            AddCartDto addCartDto = _mapper.Map<AddCartDto>(addCart);
+            addCartDto.UserID = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var cart = await _cartManager.AddToCart(addCartDto);
             if (cart != null)
             {
                 return cart;

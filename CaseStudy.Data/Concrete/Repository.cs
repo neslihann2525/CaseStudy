@@ -20,7 +20,6 @@ namespace CaseStudy.Data.Concrete
         public async virtual Task<TEntity> Create(TEntity entity)
         {
             await _context.Set<TEntity>().AddAsync(entity);
-            await _context.SaveChangesAsync();
             return entity;
         }
         public async Task<List<TEntity>> CreateList(List<TEntity> entityList)
@@ -29,7 +28,6 @@ namespace CaseStudy.Data.Concrete
             {
                 await _context.Set<TEntity>().AddAsync(entity);
             }
-            await _context.SaveChangesAsync();
             return entityList;
         }
         public async virtual Task<List<TEntity>> GetAll()
@@ -48,36 +46,28 @@ namespace CaseStudy.Data.Concrete
             return await _context.Set<TEntity>().Where(filter).AsNoTracking().ToListAsync();
         }
 
-        public async virtual Task<bool> Update(TEntity entity)
+        public virtual void Update(TEntity entity)
         {
-            try
-            {
-                _context.Entry(entity).State = EntityState.Modified;
-                return await _context.SaveChangesAsync() > 0 ? true : false;
-            }
-            catch (Exception ex)
-            {
-                //throw;
-                //log
-            }
-            return false;
+            _context.Entry(entity).State = EntityState.Modified;
         }
-        public async virtual Task<bool> Remove(TEntity entity)
+        public virtual void Remove(TEntity entity)
         {
             _context.Set<TEntity>().Remove(entity);
-            return await _context.SaveChangesAsync() > 0 ? true : false;
         }
 
-        public async virtual Task<bool> RemoveRange(List<TEntity> entity)
+        public virtual void RemoveRange(List<TEntity> entity)
         {
             _context.Set<TEntity>().RemoveRange(entity);
-            return await _context.SaveChangesAsync() > 0 ? true : false;
         }
 
-        public async virtual Task<bool> RemoveAllByFilter(Expression<Func<TEntity, bool>> filter)
+        public async virtual Task RemoveAllByFilter(Expression<Func<TEntity, bool>> filter)
         {
             var deletedResult = await _context.Set<TEntity>().Where(filter).AsNoTracking().ToListAsync();
             _context.Set<TEntity>().RemoveRange(deletedResult);
+        }
+
+        public async Task<bool> SaveChangesAsync()
+        {
             return await _context.SaveChangesAsync() > 0 ? true : false;
         }
     }

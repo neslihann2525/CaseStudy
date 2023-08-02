@@ -44,6 +44,10 @@ namespace CaseStudy.Backend.AutoMapperProfiles
 
             CreateMap<Cart, AddCartDto>().ReverseMap();
             CreateMap<AddCartDto, Cart>().ReverseMap();
+
+            CreateMap<AddCartDto, AddCartParameterDto>().ReverseMap();
+            CreateMap<AddCartParameterDto, AddedCartDto>().ReverseMap();
+
         }
     }
 }

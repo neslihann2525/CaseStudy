@@ -1,11 +1,14 @@
-﻿using CaseStudy.Business.Abstract;
+﻿using AutoMapper;
+using CaseStudy.Business.Abstract;
 using CaseStudy.Business.AbstractUnitOfWork;
 using CaseStudy.Business.Result;
 using CaseStudy.Data.Abstract;
 using CaseStudy.Data.Concrete;
+using CaseStudy.Dto.Cart;
 using CaseStudy.Dto.Payment;
 using CaseStudy.Dto.Product;
 using CaseStudy.Entities.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
@@ -21,19 +24,25 @@ namespace CaseStudy.Business.Concrete
         private readonly IProductManager _productManager;
         private readonly ICartManager _cartManager;
         private readonly IOrderManager _orderManager;
+        private readonly UserManager<AppUser> _userManager;
         private readonly IRepository<Product> _productGenericManager;
+        private readonly IMapper _mapper;
         public virtual IUnitOfWorkFactory UnitOfWorkFactory { get; }
         public PaymentManager(IUnitOfWorkFactory unitOfWorkFactory,
             IProductManager productManager,
             ICartManager cartManager,
             IOrderManager orderManager,
-            IRepository<Product> productGenericManager)
+            UserManager<AppUser> userManager,
+            IRepository<Product> productGenericManager,
+            IMapper mapper)
         {
             UnitOfWorkFactory = unitOfWorkFactory;
             _productManager = productManager;
             _cartManager = cartManager;
             _orderManager = orderManager;
+            _userManager = userManager;
             _productGenericManager = productGenericManager;
+            _mapper = mapper;
         }
 
         public async Task<IResult> Payment(PaymentDto payment)
@@ -42,26 +51,36 @@ namespace CaseStudy.Business.Concrete
             return new SuccessResult();
         }
 
-        public async Task<IResult> PaymentProcess(List<ProductAddDto> cardProducts, PaymentDto payment, int userID)
+        public async Task<IResult> PaymentProcess(PaymentDto payment, int userID)
         {
             using var uow = await UnitOfWorkFactory.NewAsync();
+            var cardProducts = await _cartManager.GetCartByUserID(userID);
+            if (cardProducts.Data.Count <= 0)
+            {
+                return new ErrorResult(new List<string> { "Sepette ürün bulunamadı" }, "ProductDoesNotExist");
+            }
             try
             {
                 //satın alınan ürünlerin stok sayısı güncellemesi yapılır.
-                await _productManager.SetProductQuantity(cardProducts.Select(n => n.ProductID).ToList
-                    ());
-
-                var paymentResult = await Payment(payment);
-                if (paymentResult.Success)
+                var result = await _productManager.SetProductQuantity(cardProducts.Data);
+                if (result.Success)
                 {
-                    //sepet temizlenir.
-                    await _cartManager.RemoveCartByUserID(userID);
+                    var paymentResult = await Payment(payment);
+                    if (paymentResult.Success)
+                    {
+                        //sepet temizlenir.
+                        await _cartManager.RemoveCartByUserID(userID);
 
-                    //kullanıcının siparişleri olarak eklenir.
-                    await _orderManager.CreateOrderList(cardProducts, userID);
+                        //kullanıcının siparişleri olarak eklenir.
+                        await _orderManager.CreateOrderList(cardProducts.Data, userID);
+                    }
+                    await uow.CommitAsync();
                 }
-
-                await uow.CommitAsync();
+                else
+                {
+                    await uow.RollbackAsync();
+                    return new ErrorResult(result.Message, result.Code);
+                }
             }
             catch (Exception ex)
             {
@@ -73,24 +92,37 @@ namespace CaseStudy.Business.Concrete
                 uow.Dispose();
             }
 
-            await NotifyUserViaEmail(cardProducts);
+            await NotifyUserViaEmail(cardProducts.Data, userID);
             return new SuccessResult();
         }
 
-        private async Task NotifyUserViaEmail(List<ProductAddDto> cardProducts)
+        private async Task<IResult> NotifyUserViaEmail(List<CartListDto> cardProducts, int userID)
         {
-            string recipientEmail = "info@kafein.com.tr";
-            string subject = "Siparişiniz oluşturuldu. Sipariş Detayları;";
-            string body = $"";
-
-            foreach (var product in cardProducts)
+            try
             {
-                var productResult = await _productGenericManager.GetFirstByFilter(n => n.ProductID == product.ProductID);
-                body = body + $"Ürün adı: {productResult.Name} Adet: {product.Quantity} Birim Fiyatı: {productResult.Price} \n";
-            }
+                var user = await _userManager.FindByIdAsync(userID.ToString());
+                if (user == null)
+                {
+                    return new ErrorResult(new List<string> { "Aranılan user bulunamadı" }, "UserDoesNotExist");
+                }
+                string recipientEmail = user.Email!;
+                string subject = "Siparişiniz oluşturuldu. Sipariş Detayları;";
+                string body = $"<html>";
 
-            var rabbitMqSender = new RabbitMqSender("localhost", 5672, "guest", "guest", "email_queue");
-            rabbitMqSender.SendEmailMessage(recipientEmail, subject, body);
+                foreach (var product in cardProducts)
+                {
+                    var productResult = await _productGenericManager.GetFirstByFilter(n => n.ProductID == product.ProductID);
+                    body = body + $"<b>Ürün adı: </b>{productResult.Name} <br/><b>Adet: </b>{product.Quantity} <br/><b>Birim Fiyatı: </b>{productResult.Price} <br/><br/>";
+                }
+                body += "</html>";
+                var rabbitMqSender = new RabbitMqSender("localhost", 5672, "guest", "guest", "email_queue");
+                rabbitMqSender.SendEmailMessage(recipientEmail, subject, body);
+                return new SuccessResult();
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResult(new List<string> { "Beklenmeyen bir hata oluştu" }, "Failed");
+            }
         }
     }
 }

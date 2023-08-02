@@ -1,4 +1,5 @@
 ﻿using CaseStudy.Business.Result;
+using CaseStudy.Dto.Cart;
 using CaseStudy.Dto.Order;
 using CaseStudy.Dto.Payment;
 using CaseStudy.Entities.Models;
@@ -13,6 +14,6 @@ namespace CaseStudy.Business.Abstract
     public interface IOrderManager
     {
         Task<IDataResult<List<GetOrderListDto>>> GetOrderListByUserID(int userID);
-        Task<List<Order>> CreateOrderList(List<ProductAddDto> cardProducts, int userID);
+        Task<List<Order>> CreateOrderList(List<CartListDto> cardProducts, int userID);
     }
 }

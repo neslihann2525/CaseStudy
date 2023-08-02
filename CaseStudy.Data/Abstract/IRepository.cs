@@ -14,9 +14,10 @@ namespace CaseStudy.Data.Abstract
         Task<List<TEntity>> GetAll();
         Task<TEntity> GetFirstByFilter(Expression<Func<TEntity, bool>> filter);
         Task<List<TEntity>> GetAllByFilter(Expression<Func<TEntity, bool>> filter);
-        Task<bool> Update(TEntity entity);
-        Task<bool> Remove(TEntity entity);
-        Task<bool> RemoveRange(List<TEntity> entity);
-        Task<bool> RemoveAllByFilter(Expression<Func<TEntity, bool>> filter);
+        void Update(TEntity entity);
+        void Remove(TEntity entity);
+        void RemoveRange(List<TEntity> entity);
+        Task RemoveAllByFilter(Expression<Func<TEntity, bool>> filter);
+        Task<bool> SaveChangesAsync();
     }
 }

@@ -2,6 +2,7 @@
 using System.Net.Mail;
 using System.Text;
 using CaseStudy.Business.Providers.Email;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 
@@ -20,6 +21,7 @@ public class RabbitMqSender
             UserName = userName,
             Password = password
         };
+        
     }
 
     public void SendEmailMessage(string recipientEmail, string subject, string body)

@@ -2,6 +2,7 @@
 using CaseStudy.Business.Abstract;
 using CaseStudy.Business.Result;
 using CaseStudy.Data.Abstract;
+using CaseStudy.Dto.Cart;
 using CaseStudy.Dto.Order;
 using CaseStudy.Dto.Payment;
 using CaseStudy.Entities.Models;
@@ -40,17 +41,25 @@ namespace CaseStudy.Business.Concrete
             return new ErrorDataResult<List<GetOrderListDto>>(new List<string> { "" }, "");
         }
 
-        public async Task<List<Order>> CreateOrderList(List<ProductAddDto> cardProducts, int userID)
+        public async Task<List<Order>> CreateOrderList(List<CartListDto> cardProducts, int userID)
         {
-                var orderList = new List<Order>();
+            var orderList = new List<Order>();
 
-                foreach (var cardProduct in cardProducts)
+            foreach (var cardProduct in cardProducts)
+            {
+                var order = new Order
                 {
-                    var order = new Order { UserID = userID, ProductID = cardProduct.ProductID };
-                    orderList.Add(order);
-                }
+                    UserID = userID,
+                    ProductID = cardProduct.ProductID,
+                    Quantity = cardProduct.Quantity,
+                    CreatedDate = DateTime.Now
+                };
+                orderList.Add(order);
+            }
 
-                return orderList;
+            await _orderRepository.CreateList(orderList);
+
+            return orderList;
         }
     }
 }

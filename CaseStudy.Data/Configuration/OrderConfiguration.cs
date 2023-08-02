@@ -17,6 +17,9 @@ namespace CaseStudy.Data.Configuration
             builder.Property(p => p.OrderID).UseIdentityColumn();
             builder.Property(n => n.ProductID).IsRequired();
             builder.Property(n => n.UserID).IsRequired();
+            builder.Property(n => n.Quantity).IsRequired();
+            builder.Property(n => n.CreatedDate).IsRequired();
+
             builder.HasOne(n => n.AppUser).WithMany(n => n.Orders).HasForeignKey(n => n.UserID).OnDelete(DeleteBehavior.NoAction);
             builder.HasOne(n => n.Product).WithMany(n => n.Orders).HasForeignKey(n => n.ProductID).OnDelete(DeleteBehavior.NoAction);
         }

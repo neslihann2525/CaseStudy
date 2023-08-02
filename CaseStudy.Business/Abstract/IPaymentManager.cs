@@ -12,6 +12,6 @@ namespace CaseStudy.Business.Abstract
     public interface IPaymentManager
     {
         Task<IResult> Payment(PaymentDto payment);
-        Task<IResult> PaymentProcess(List<ProductAddDto> cardProducts, PaymentDto payment, int userID);
+        Task<IResult> PaymentProcess(PaymentDto payment, int userID);
     }
 }

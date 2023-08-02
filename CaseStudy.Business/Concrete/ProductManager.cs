@@ -3,7 +3,9 @@ using CaseStudy.Business.Abstract;
 using CaseStudy.Business.Result;
 using CaseStudy.Data.Abstract;
 using CaseStudy.Data.Concrete;
+using CaseStudy.Dto.Cart;
 using CaseStudy.Dto.Order;
+using CaseStudy.Dto.Payment;
 using CaseStudy.Dto.Product;
 using CaseStudy.Entities.Models;
 using Microsoft.EntityFrameworkCore;
@@ -48,25 +50,22 @@ namespace CaseStudy.Business.Concrete
             return new ErrorDataResult<List<GetProductDto>>(new List<string> { "" }, "");
         }
 
-        public async Task<IResult> SetProductQuantity(List<int> cardProducts)
+        public async Task<IResult> SetProductQuantity(List<CartListDto> cardProducts)
         {
-            var orderList = new List<Order>();
-
             foreach (var cardProduct in cardProducts)
             {
-            var product = await _repository.GetFirstByFilter(n => n.ProductID == cardProduct);
+                var product = await _repository.GetFirstByFilter(n => n.ProductID == cardProduct.ProductID);
                 if (product != null)
                 {
-                    product.Quantity = product.Quantity--;
-                    var result = await _repository.Update(product);
-                    if (result)
+                    if(product.Quantity < cardProduct.Quantity)
                     {
-                        return new SuccessResult();
+                        return new ErrorResult(new List<string> { "Yeterli ürün bulunamadı" }, "ProductQuantityDoesNotExist");
                     }
+                    product.Quantity = product.Quantity - cardProduct.Quantity;
+                    _repository.Update(product);
                 }
             }
-
-            return new ErrorDataResult<IResult>(new List<string> { "" }, "");
+            return new SuccessResult();
         }
     }
 }

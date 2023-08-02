@@ -11,28 +11,37 @@ namespace CaseStudy.Business.Concrete
     public class CartManager : ICartManager
     {
         private readonly ICartRepository _cartRepository;
+        private readonly IProductRepository _productRepository;
         private readonly IRepositoryFactory<Cart> _factory;
         private readonly IMapper _mapper;
         IRepository<Cart>? repository;
         public CartManager(ICartRepository cartRepository,
             IRepositoryFactory<Cart> factory,
+            IProductRepository productRepository,
             IMapper mapper)
         {
             _cartRepository = cartRepository;
+            _productRepository = productRepository;
             _factory = factory;
             _mapper = mapper;
 
             repository = _factory.Create();
 
         }
-        
+
         public async Task<IDataResult<AddedCartDto>> AddToCart(AddCartDto addCart)
         {
             var convertCart = _mapper.Map<Cart>(addCart);
             try
             {
+                var product = await _productRepository.GetFirstByFilter(n => n.ProductID == addCart.ProductID);
+                if (product.Quantity < addCart.Quantity)
+                {
+                    return new ErrorDataResult<AddedCartDto>(new List<string> { "Stokta yeterli ürün bulunmamaktadır" }, "StockDoesNotEnough");
+                }
                 var addedCart = await repository!.Create(convertCart);
-                if (addedCart != null)
+                var result = await repository!.SaveChangesAsync();
+                if (result)
                 {
                     return new SuccessDataResult<AddedCartDto>(_mapper.Map<AddedCartDto>(addedCart));
                 }
@@ -47,7 +56,8 @@ namespace CaseStudy.Business.Concrete
         public async Task<IResult> RemoveFromCart(int cartId)
         {
             var findCart = await repository!.GetFirstByFilter(n => n.CartID == cartId);
-            var removedCart = await repository!.Remove(findCart);
+            repository!.Remove(findCart);
+            var removedCart = await repository!.SaveChangesAsync();
             if (removedCart)
             {
                 return new SuccessResult();
@@ -56,12 +66,10 @@ namespace CaseStudy.Business.Concrete
         }
         public async Task<IResult> RemoveCartByUserID(int userID)
         {
-            var removedCart = await repository!.RemoveAllByFilter(n => n.UserID == userID);
-            if (removedCart)
-            {
-                return new SuccessResult();
-            }
-            return new ErrorResult(new List<string> { "" }, "");
+            await repository!.RemoveAllByFilter(n => n.UserID == userID);
+            //var removedCart = await repository!.SaveChangesAsync();
+
+            return new SuccessResult();
         }
 
         public async Task<IDataResult<GetCartDto>> GetCart(int userID)
@@ -77,7 +85,7 @@ namespace CaseStudy.Business.Concrete
                                  })
                                  .ToList();
 
-            carts.CartList = _mapper.Map<List<CartListDto>>(userCart.GroupBy(n => n.ProductID));
+            carts.CartList = _mapper.Map<List<CartListDto>>(userCart.ToList().DistinctBy(n => n.ProductID));
             carts.CartList.ForEach(n => n.Quantity = result.FirstOrDefault(x => x.ProductID == n.ProductID)?.TotalQuantity ?? 0);
             carts.TotalCost = userCart.Sum(x => x.Product.Price);
 
@@ -86,6 +94,12 @@ namespace CaseStudy.Business.Concrete
                 return new SuccessDataResult<GetCartDto>(carts);
             }
             return new ErrorDataResult<GetCartDto>(new List<string> { "" }, "");
+        }
+
+        public async Task<IDataResult<List<CartListDto>>> GetCartByUserID(int userID)
+        {
+            var list = await repository!.GetAllByFilter(n => n.UserID == userID);
+            return new SuccessDataResult<List<CartListDto>>(_mapper.Map<List<CartListDto>>(list));
         }
     }
 }

@@ -17,7 +17,7 @@ public class EmailService
     public async Task SendEmailAsync(string recipientEmail, string subject, string body)
     {
         var message = new MimeMessage();
-        message.From.Add(new MailboxAddress("kafein.com.tr", _emailSettings.Sender));
+        message.From.Add(new MailboxAddress("Mail Adresi", _emailSettings.Sender));
         message.To.Add(new MailboxAddress("", recipientEmail));
         message.Subject = subject;
 

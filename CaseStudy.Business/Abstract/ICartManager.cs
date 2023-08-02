@@ -15,5 +15,6 @@ namespace CaseStudy.Business.Abstract
         Task<IResult> RemoveFromCart(int cartId);
         Task<IResult> RemoveCartByUserID(int userID);
         Task<IDataResult<AddedCartDto>> AddToCart(AddCartDto addCart);
+        Task<IDataResult<List<CartListDto>>> GetCartByUserID(int userID);
     }
 }
