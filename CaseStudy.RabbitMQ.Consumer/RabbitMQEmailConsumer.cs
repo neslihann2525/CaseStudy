@@ -24,7 +24,7 @@ namespace CaseStudy.RabbitMQConsumer
                 Password = password
             };
 
-            _emailService = emailService; // Initialize EmailService as required
+            _emailService = emailService; 
         }
 
         public async Task StartListening()
@@ -44,24 +44,18 @@ namespace CaseStudy.RabbitMQConsumer
                         var messageBody = Encoding.UTF8.GetString(args.Body.ToArray());
                         var emailMessage = JsonConvert.DeserializeObject<EmailMessage>(messageBody);
 
-                        // Send the email using EmailService
                         await _emailService.SendEmailAsync(emailMessage!.RecipientEmail!, emailMessage.Subject, emailMessage.Body);
 
-                        // Acknowledge the message to remove it from the queue
                         channel.BasicAck(args.DeliveryTag, false);
                     }
                     catch (Exception ex)
                     {
-                        // Handle the exception and optionally log the error
-                        // If an exception is not acknowledged, the message will be re-queued
                         Console.WriteLine("Error processing message: " + ex.Message);
                     }
                 };
 
-                // Limit the number of unacknowledged messages to 1 at a time
                 channel.BasicQos(0, 1, false);
 
-                // Start consuming messages
                 channel.BasicConsume(queue: _queueName, autoAck: false, consumer: consumer);
 
                 Console.WriteLine("Consumer started. Press any key to exit...");

@@ -7,14 +7,12 @@ using CaseStudy.Business.Providers.Email;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddDbContext<CaseStudyContext>(opt =>
 {
     opt.UseSqlServer("server=(localdb)\\mssqllocaldb; database=CaseStudy; integrated security=true;");
 });
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddIdentity<AppUser, AppRole>().AddEntityFrameworkStores<CaseStudyContext>();
@@ -29,7 +27,6 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 //builder.Services.AddAuthentication();
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

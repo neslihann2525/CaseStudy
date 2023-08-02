@@ -35,16 +35,6 @@ factory.UserName = userName;
 factory.Password = password;
 var connection = factory.CreateConnection();
 var channel = connection.CreateModel();
-//var consumer = new EventingBasicConsumer(channel);
-
-//consumer.Received += (model, ea) =>
-//{
-//    var bodyMessage = ea.Body.ToArray();
-//    var message = Encoding.UTF8.GetString(bodyMessage);
-//    System.Console.WriteLine("okunan mesaj: " + message);
-//};
-
-//channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
 
 var emailConsumer = new RabbitMQEmailConsumer(hostName, port, userName, password, queueName, emailServiceProvider.GetRequiredService<EmailService>());
 await emailConsumer.StartListening();

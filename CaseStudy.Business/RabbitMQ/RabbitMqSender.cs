@@ -33,7 +33,7 @@ public class RabbitMqSender
 
             var messageBody = Encoding.UTF8.GetBytes(body);
             var properties = channel.CreateBasicProperties();
-            properties.Persistent = true; // To make messages persistent in case of RabbitMQ restarts
+            properties.Persistent = true; 
 
             var emailMessage = new EmailMessage
             {

@@ -36,7 +36,7 @@ namespace CaseStudy.Business.Factories
             services.AddScoped<Func<IEnumerable<IRepository<Cart>>>>(x => () => x.GetService<IEnumerable<IRepository<Cart>>>()!);
             services.AddScoped<Func<IEnumerable<IRepository<Order>>>>(x => () => x.GetService<IEnumerable<IRepository<Order>>>()!);
             services.AddScoped<Func<IEnumerable<IRepository<Product>>>>(x => () => x.GetService<IEnumerable<IRepository<Product>>>()!);
-            //services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            
             services.AddScoped(typeof(IRepositoryFactory<>), typeof(RepositoryFactory<>));
 
 

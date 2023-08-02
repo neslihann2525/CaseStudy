@@ -20,7 +20,6 @@ namespace CaseStudy.Business.UnitOfWork
 
         public async Task CommitAsync()
         {
-            // TODO: Only call this if it hasn't been called already
             await _dbContext.SaveChangesAsync();
 
             await _dbContextTransaction.CommitAsync();
