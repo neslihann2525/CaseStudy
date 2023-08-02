@@ -67,7 +67,6 @@ namespace CaseStudy.Business.Concrete
         public async Task<IResult> RemoveCartByUserID(int userID)
         {
             await repository!.RemoveAllByFilter(n => n.UserID == userID);
-
             return new SuccessResult();
         }
 
