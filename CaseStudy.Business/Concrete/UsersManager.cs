@@ -20,6 +20,7 @@ namespace CaseStudy.Business.Concrete
             _roleManager = roleManager;
             _mapper = mapper;
         }
+
         public async Task<IDataResult<SignUpResponseDto>> SignUp(SignUpRequestDto signUpRequest)
         {
             if (signUpRequest == null)            
